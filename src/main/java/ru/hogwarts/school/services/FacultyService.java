@@ -2,9 +2,11 @@ package ru.hogwarts.school.services;
 
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 
 import java.util.Collection;
+import java.util.Collections;
 
 
 @Service
@@ -16,6 +18,7 @@ public class FacultyService {
     }
 
     public Faculty createFaculty(Faculty faculty) {
+
         return facultyRepository.save(faculty);
     }
 
@@ -31,11 +34,30 @@ public class FacultyService {
         return facultyRepository.findAll();
     }
 
-    public void deleteFaculty(long id) {
-        facultyRepository.deleteById(id);
+    public Faculty deleteFaculty(Long id) {
+        Faculty faculty = facultyRepository.findById(id).orElse(null);
+        if (faculty != null) {
+            facultyRepository.deleteById(id);
+        }
+        return faculty;
     }
 
-    public Collection<Faculty> findByColor(String color) {
-        return facultyRepository.findAll();
+       public Collection <Faculty> findByColour(String colour) {
+        return facultyRepository.findByColourContainsIgnoreCase(colour);
+    }
+     public Faculty findByName(String name) {
+        return facultyRepository.findByNameIgnoreCase(name);
+     }
+
+    public Faculty getFacultyById(Long id) {
+        return facultyRepository.findById(id).orElse(null);
+    }
+
+    public Collection<Student> getStudentsByFacultyId(Long facultyId) {
+        Faculty faculty = facultyRepository.findById(facultyId).orElse(null);
+        if (faculty == null) {
+            return Collections.emptyList();
+        }
+        return faculty.getStudents(); // так как у нас есть mappedBy, можно получить напрямую
     }
 }

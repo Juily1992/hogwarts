@@ -32,12 +32,34 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    public void deleteStudent(long id) {
-        studentRepository.deleteById(id);
+
+    public Student deleteStudent (Long id) {
+        Student faculty = studentRepository.findById(id).orElse(null);
+        if (faculty != null) {
+            studentRepository.deleteById(id);
+        }
+        return faculty; // возвращаем удалённый объект или null
     }
 
-    public Collection<Student> findByAge(int age) {
-        return studentRepository.findAll();
+
+
+    public Student findStudentByName(String name) {
+        return studentRepository.findStudentByNameContainsIgnoreCase(name);
     }
 
+    public Collection<Student> findStudentByAge(int age) {
+        return studentRepository.findStudentByAge(age);
+    }
+
+    public Collection<Student> findByNameContaining(String part) {
+        return studentRepository.findByNameContainingIgnoreCase(part);
+    }
+
+    public Collection<Student> findStudentByAgeBetween(int min, int max) {
+        return studentRepository.findByAgeBetween(min, max);
+    }
+
+    public Student getStudentById(Long id) {
+        return studentRepository.findById(id).orElse(null);
+    }
 }
