@@ -1,8 +1,6 @@
 package ru.hogwarts.school.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +29,7 @@ public class StudentController {
         this.studentService = studentService;
 
     }
+
     @GetMapping("{id}")
     public ResponseEntity<Student> getStudentInfo(@PathVariable Long id) {
         Student student = studentService.getStudentById(id);
@@ -44,6 +43,7 @@ public class StudentController {
     public ResponseEntity<Collection<Student>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
+
     @GetMapping("/filterByAge")
     public ResponseEntity<Collection<Student>> findStudents(
             @RequestParam(required = false) Integer min,
@@ -54,6 +54,7 @@ public class StudentController {
         }
         return ResponseEntity.badRequest().body(null);
     }
+
     @GetMapping("/filter")
     public ResponseEntity<Collection<Student>> findStudents(
             @RequestParam(required = false) Integer age,
@@ -113,17 +114,17 @@ public class StudentController {
         return ResponseEntity.ok(student.getFaculty());
     }
 
-    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
-            public ResponseEntity<String> uploadAvatar(@PathVariable Long id, @RequestParam MultipartFile avatar) throws IOException {
-if (avatar.getSize()>= 1024*1024) {
-    return ResponseEntity.badRequest().body("The size of avatar is too large");
-    }
-studentService.uploadAvatar(id, avatar);
-return ResponseEntity.ok().build();
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadAvatar(@PathVariable Long id, @RequestParam MultipartFile avatar) throws IOException {
+        if (avatar.getSize() >= 1024 * 1024) {
+            return ResponseEntity.badRequest().body("The size of avatar is too large");
+        }
+        studentService.uploadAvatar(id, avatar);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping (value = "/{id}/avatar/preview")
-    public ResponseEntity<byte [] > downloadAvatar(@PathVariable Long id) {
+    @GetMapping(value = "/{id}/avatar/preview")
+    public ResponseEntity<byte[]> downloadAvatar(@PathVariable Long id) {
         Avatar avatar = studentService.findStudentAvatar(id);
 
         HttpHeaders headers = new HttpHeaders();
@@ -132,14 +133,14 @@ return ResponseEntity.ok().build();
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(avatar.getPreview());
     }
 
-    @GetMapping (value = "/{id}/avatar")
+    @GetMapping(value = "/{id}/avatar")
     public void downloadAvatar(@PathVariable Long id, HttpServletResponse response) throws IOException {
         Avatar avatar = studentService.findStudentAvatar(id);
 
         Path path = Path.of(avatar.getFilePath());
 
         try (InputStream is = Files.newInputStream(path);
-        OutputStream os = response.getOutputStream()) {
+             OutputStream os = response.getOutputStream()) {
             response.setStatus(200);
             response.setContentType(avatar.getMediaType());
             response.setContentLength((int) avatar.getFileSize());

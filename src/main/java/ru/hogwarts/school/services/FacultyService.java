@@ -1,6 +1,5 @@
 package ru.hogwarts.school.services;
 
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
@@ -44,12 +43,13 @@ public class FacultyService {
         return faculty;
     }
 
-       public Collection <Faculty> findByColour(String colour) {
+    public Collection<Faculty> findByColour(String colour) {
         return facultyRepository.findByColourContainsIgnoreCase(colour);
     }
-     public Faculty findByName(String name) {
+
+    public Faculty findByName(String name) {
         return facultyRepository.findByNameIgnoreCase(name);
-     }
+    }
 
     public Faculty getFacultyById(Long id) {
         return facultyRepository.findById(id).orElse(null);

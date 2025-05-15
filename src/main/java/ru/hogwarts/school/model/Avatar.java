@@ -1,9 +1,9 @@
 package ru.hogwarts.school.model;
 
 import jakarta.persistence.*;
-
 import java.util.Arrays;
 import java.util.Objects;
+
 @Entity
 public class Avatar {
 
@@ -15,7 +15,7 @@ public class Avatar {
     private String mediaType;
 
     @Lob
-    private byte [] preview;
+    private byte[] preview;
 
     @OneToOne
     private Student student;
@@ -26,7 +26,7 @@ public class Avatar {
         this.filePath = filePath;
         this.fileSize = fileSize;
         this.mediaType = mediaType;
-           this.student = student;
+        this.student = student;
     }
 
     public Avatar() {
