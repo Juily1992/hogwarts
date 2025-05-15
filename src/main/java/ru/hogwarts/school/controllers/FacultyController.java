@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controllers;
 
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
@@ -52,8 +53,9 @@ import java.util.Collections;
     }
 
     @PostMapping
-    public Faculty createFaculty (@RequestBody Faculty faculty) {
-        return facultyService.createFaculty(faculty);
+    public ResponseEntity <Faculty> createFaculty (@RequestBody Faculty faculty) {
+            Faculty createdFaculty = facultyService.createFaculty(faculty);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdFaculty);
     }
 
         @PutMapping
@@ -72,8 +74,7 @@ import java.util.Collections;
         if (deletedFaculty == null) {
             return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.ok(deletedFaculty);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{facultyId}/students")

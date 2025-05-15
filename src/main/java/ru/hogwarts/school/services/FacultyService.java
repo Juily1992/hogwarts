@@ -1,5 +1,6 @@
 package ru.hogwarts.school.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
@@ -10,6 +11,7 @@ import java.util.Collections;
 
 
 @Service
+
 public class FacultyService {
     private final FacultyRepository facultyRepository;
 
@@ -58,6 +60,6 @@ public class FacultyService {
         if (faculty == null) {
             return Collections.emptyList();
         }
-        return faculty.getStudents(); // так как у нас есть mappedBy, можно получить напрямую
+        return faculty.getStudent();
     }
 }
