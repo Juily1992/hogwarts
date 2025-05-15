@@ -10,6 +10,7 @@ import java.util.Collections;
 
 
 @Service
+
 public class FacultyService {
     private final FacultyRepository facultyRepository;
 
@@ -42,12 +43,13 @@ public class FacultyService {
         return faculty;
     }
 
-       public Collection <Faculty> findByColour(String colour) {
+    public Collection<Faculty> findByColour(String colour) {
         return facultyRepository.findByColourContainsIgnoreCase(colour);
     }
-     public Faculty findByName(String name) {
+
+    public Faculty findByName(String name) {
         return facultyRepository.findByNameIgnoreCase(name);
-     }
+    }
 
     public Faculty getFacultyById(Long id) {
         return facultyRepository.findById(id).orElse(null);
@@ -58,6 +60,6 @@ public class FacultyService {
         if (faculty == null) {
             return Collections.emptyList();
         }
-        return faculty.getStudents(); // так как у нас есть mappedBy, можно получить напрямую
+        return faculty.getStudent();
     }
 }

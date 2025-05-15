@@ -1,9 +1,7 @@
 package ru.hogwarts.school.model;
 
 import jakarta.persistence.*;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,20 +15,17 @@ public class Faculty {
     private String name;
     private String colour;
 
-    public Set<Student> getStudent() {
-        return student;
-    }
-
-    @OneToMany (mappedBy = "faculty")
+    @OneToMany(mappedBy = "faculty")
     private Set<Student> student = new HashSet<>();
 
-    public Set<Student> getStudents() {
+    public Set<Student> getStudent() {
         return student;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
+
     public Long getId() {
         return id;
     }
