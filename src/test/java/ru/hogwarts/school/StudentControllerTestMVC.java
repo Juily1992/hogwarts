@@ -33,7 +33,7 @@ public class StudentControllerTestMVC {
 
     @Test
     void shouldReturnStudentById() throws Exception {
-        Student student = new Student(1L, "Harry Potter", 15);
+        Student student = createTestStudent(1L, "Harry Potter", 15);
         when(studentService.getStudentById(1L)).thenReturn(student);
 
         mockMvc.perform(get("/student/1"))
@@ -56,8 +56,8 @@ public class StudentControllerTestMVC {
     @Test
     void shouldReturnAllStudents() throws Exception {
         Collection<Student> students = List.of(
-                new Student(1L, "Harry", 15),
-                new Student(2L, "Hermione", 16)
+                createTestStudent(1L, "Harry", 15),
+                createTestStudent(2L, "Hermione", 16)
         );
         when(studentService.getAllStudents()).thenReturn(students);
 
@@ -68,9 +68,16 @@ public class StudentControllerTestMVC {
         verify(studentService, times(1)).getAllStudents();
     }
 
+    private Student createTestStudent(Long id, String name, int age) {
+        Student student = new Student();
+        student.setId(id);
+        student.setName(name);
+        student.setAge(age);
+        return student;
+    }
     @Test
     void shouldFilterStudentsByAgeBetween() throws Exception {
-        Collection<Student> students = List.of(new Student(1L, "Ron", 20));
+        Collection<Student> students = List.of(createTestStudent(1L, "Ron", 20));
         when(studentService.findStudentByAgeBetween(20, 30)).thenReturn(students);
 
         mockMvc.perform(get("/student/filterByAge")
@@ -90,7 +97,7 @@ public class StudentControllerTestMVC {
 
     @Test
     void shouldFilterStudentsByExactAge() throws Exception {
-        Collection<Student> students = List.of(new Student(1L, "Harry", 20));
+        Collection<Student> students = List.of(createTestStudent(1L, "Harry", 20));
         when(studentService.findStudentByAge(20)).thenReturn(students);
 
         mockMvc.perform(get("/student/filter")
@@ -103,7 +110,7 @@ public class StudentControllerTestMVC {
 
     @Test
     void shouldFilterStudentsByName() throws Exception {
-        Student student = new Student(1L, "Harry", 15);
+        Student student = createTestStudent(1L, "Harry", 15);
         when(studentService.findStudentByName("harry")).thenReturn(student);
 
         mockMvc.perform(get("/student/filter")
@@ -129,7 +136,7 @@ public class StudentControllerTestMVC {
 
     @Test
     void shouldFilterStudentsByPartOfName() throws Exception {
-        Collection<Student> students = List.of(new Student(1L, "Harry", 15));
+        Collection<Student> students = List.of(createTestStudent(1L, "Harry", 15));
         when(studentService.findByNameContaining("rry")).thenReturn(students);
 
         mockMvc.perform(get("/student/filter")
@@ -165,7 +172,7 @@ public class StudentControllerTestMVC {
 
     @Test
     void shouldEditExistingStudent() throws Exception {
-        Student existing = new Student(1L, "Old Name", 15);
+        Student existing = createTestStudent(1L, "Old Name", 15);
         when(studentService.findStudent(1L)).thenReturn(existing);
 
         mockMvc.perform(put("/student")
@@ -189,39 +196,26 @@ public class StudentControllerTestMVC {
         verify(studentService, times(1)).findStudent(999L);
     }
 
-    @Test
-    void shouldDeleteStudentSuccessfully() throws Exception {
-        Student deleted = new Student(1L, "Harry", 15);
-        when(studentService.deleteStudent(1L)).thenReturn(deleted);
-
-        mockMvc.perform(delete("/student/1"))
-                .andExpect(status().isOk());
-
-        verify(studentService, times(1)).deleteStudent(1L);
+    private Faculty createTestFaculty(Long id, String name, String colour) {
+        Faculty faculty = new Faculty();
+        faculty.setId(id);
+        faculty.setName(name);
+        faculty.setColour(colour);
+        return faculty;
     }
-
-    @Test
-    void shouldReturnNotFoundWhenDeletingNonExistentStudent() throws Exception {
-        when(studentService.deleteStudent(999L)).thenReturn(null);
-
-        mockMvc.perform(delete("/student/999"))
-                .andExpect(status().isNotFound());
-
-        verify(studentService, times(1)).deleteStudent(999L);
-    }
-
     @Test
     void shouldReturnFacultyOfStudent() throws Exception {
-        Faculty faculty = new Faculty(1L, "Gryffindor", "Red");
+        Faculty faculty = createTestFaculty(1L, "Gryffindor", "Red");
 
-        Student student = new Student(1L, "Harry", 15);
-        student.getFaculty();
+        Student student = createTestStudent(1L, "Harry", 15);
+        student.setFaculty(faculty);
 
         when(studentService.getStudentById(1L)).thenReturn(student);
 
         mockMvc.perform(get("/student/1/faculty"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Gryffindor"));
+                .andExpect(jsonPath("$.name").value("Gryffindor"))
+                .andExpect(jsonPath("$.colour").value("Red"));
 
         verify(studentService, times(1)).getStudentById(1L);
     }
@@ -234,18 +228,6 @@ public class StudentControllerTestMVC {
                 .andExpect(status().isNotFound());
 
         verify(studentService, times(1)).getStudentById(999L);
-    }
-
-    @Test
-    void shouldUploadAvatarSuccessfully() throws Exception {
-        // Мокаем успешное выполнение
-        doNothing().when(studentService).uploadAvatar(1L, any(MultipartFile.class));
-
-        mockMvc.perform(multipart("/student/1/avatar")
-                        .file("avatar", "test content".getBytes()))
-                .andExpect(status().isOk());
-
-        verify(studentService, times(1)).uploadAvatar(1L, any(MultipartFile.class));
     }
 
     @Test

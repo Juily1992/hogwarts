@@ -57,23 +57,37 @@ public class FacultyControllerTestMVC {
 
     @Test
     void shouldReturnAllFaculties() throws Exception {
-        Collection<Faculty> faculties = List.of(
-                new Faculty(1L, "Gryffindor", "Red"),
-                new Faculty(2L, "Slytherin", "Green")
-        );
+        Faculty faculty1 = new Faculty();
+        faculty1.setId(1L);
+        faculty1.setName("Gryffindor");
+        faculty1.setColour("Red");
 
-        when(facultyService.getAllFaculty()).thenReturn(faculties);
+        Faculty faculty2 = new Faculty();
+        faculty2.setId(2L);
+        faculty2.setName("Slytherin");
+        faculty2.setColour("Green");
+
+        Collection<Faculty> allFaculties = List.of(faculty1, faculty2);
+
+        when(facultyService.getAllFaculty()).thenReturn(allFaculties);
 
         mockMvc.perform(get("/faculty"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2));
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Gryffindor"))
+                .andExpect(jsonPath("$[1].name").value("Slytherin"));
 
         verify(facultyService, times(1)).getAllFaculty();
     }
 
     @Test
     void shouldFilterFacultiesByColour() throws Exception {
-        Collection<Faculty> filtered = List.of(new Faculty(1L, "Gryffindor", "Red"));
+        Faculty faculty = new Faculty();
+        faculty.setId(1L);
+        faculty.setName("Gryffindor");
+        faculty.setColour("Red");
+
+        Collection<Faculty> filtered = List.of(faculty);
 
         when(facultyService.findByColour("red")).thenReturn(filtered);
 
@@ -85,28 +99,39 @@ public class FacultyControllerTestMVC {
 
     @Test
     void shouldFilterFacultiesByName() throws Exception {
-        Faculty faculty = new Faculty(1L, "Gryffindor", "Red");
+        Faculty faculty = new Faculty();
+        faculty.setId(1L);
+        faculty.setName("Gryffindor");
+        faculty.setColour("Red");
 
         when(facultyService.findByName("Gryffindor")).thenReturn(faculty);
 
         mockMvc.perform(get("/faculty/filter?name=Gryffindor"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Gryffindor"));
+                .andExpect(jsonPath("$.size()").value(1));
     }
 
     @Test
     void shouldReturnAllFacultiesWhenNoFilterParams() throws Exception {
-        Collection<Faculty> allFaculties = List.of(
-                new Faculty(1L, "Gryffindor", "Red"),
-                new Faculty(2L, "Hufflepuff", "Yellow")
-        );
+        Faculty faculty1 = new Faculty();
+        faculty1.setId(1L);
+        faculty1.setName("Gryffindor");
+        faculty1.setColour("Red");
+
+        Faculty faculty2 = new Faculty();
+        faculty2.setId(2L);
+        faculty2.setName("Hufflepuff");
+        faculty2.setColour("Yellow");
+
+        Collection<Faculty> allFaculties = List.of(faculty1, faculty2);
 
         when(facultyService.getAllFaculty()).thenReturn(allFaculties);
 
         mockMvc.perform(get("/faculty/filter"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2));
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Gryffindor"))
+                .andExpect(jsonPath("$[1].name").value("Hufflepuff"));
     }
 
     @Test

@@ -1,25 +1,32 @@
 package ru.hogwarts.school;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.services.FacultyService;
 
 import java.util.Collection;
+import java.util.List;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FacultyControllerTest {
-
+private FacultyService facultyService;
     @LocalServerPort
     private int port;
 
@@ -57,40 +64,57 @@ public class FacultyControllerTest {
     @Test
     void testFindFacultiesByColour_ShouldReturnFilteredFaculties() {
         String colour = "red";
-        ResponseEntity<Collection<Faculty>> response = restTemplate.getForEntity(
-                getRootUrl() + "/filter?colour=" + colour,
-                new ParameterizedTypeReference<Collection<Faculty>>() {
-                }
+        String url = UriComponentsBuilder.fromHttpUrl(getRootUrl() + "/filter")
+                .queryParam("colour", colour)
+                .build()
+                .toUriString();
+
+        ResponseEntity<List<Faculty>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Faculty>>() {}
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotEmpty();
+        assertThat(response.getBody()).isNotEmpty()
+                .allMatch(f -> f.getColour().equalsIgnoreCase(colour));
     }
 
     @Test
     void testFindFacultiesByName_ShouldReturnSingleFaculty() {
         String name = "Gryffindor";
-        ResponseEntity<Collection<Faculty>> response = restTemplate.getForEntity(
-                getRootUrl() + "/filter?name=" + name,
-                new ParameterizedTypeReference<Collection<Faculty>>() {
-                }
-        );
+
+        String url = UriComponentsBuilder.fromHttpUrl(getRootUrl() + "/filter")
+                .queryParam("name", name)
+                .build()
+                .toUriString();
+
+        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(url, Faculty[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody()[0].getName()).isEqualTo(name);
     }
 
 
     @Test
     void testFindAllFaculties_WhenNoFilterParams() {
-        ResponseEntity<Collection<Faculty>> response = restTemplate.getForEntity(
+         Collection<Faculty> allFaculties = List.of(
+                new Faculty(1L, "Gryffindor", "Red"),
+                new Faculty(2L, "Hufflepuff", "Yellow")
+        );
+
+        when(facultyService.getAllFaculty()).thenReturn(allFaculties);
+
+        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(
                 getRootUrl() + "/filter",
-                new ParameterizedTypeReference<Collection<Faculty>>() {
-                }
+                Faculty[].class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotEmpty();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).hasSize(2);
     }
 
     @Test
@@ -102,6 +126,7 @@ public class FacultyControllerTest {
         ResponseEntity<Faculty> response = restTemplate.postForEntity(getRootUrl(), faculty, Faculty.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Assertions.assertNotNull(response.getBody());
         assertThat(response.getBody().getId()).isNotNull();
     }
 
@@ -121,6 +146,7 @@ public class FacultyControllerTest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Assertions.assertNotNull(response.getBody());
         assertThat(response.getBody().getColour()).isEqualTo("Dark Blue");
     }
 

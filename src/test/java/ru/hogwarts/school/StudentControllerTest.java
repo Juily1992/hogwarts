@@ -44,13 +44,10 @@ public class StudentControllerTest {
     }
 
     @Test
-    void testGetAllStudents() {
-        ResponseEntity<Collection<Student>> response = restTemplate.exchange(
+    void testGetAllStudents_shouldReturnOkAndCollectionOfStudents() {
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 getRootUrl(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<Collection<Student>>() {
-                }
+                Student[].class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -59,9 +56,9 @@ public class StudentControllerTest {
 
     @Test
     void testFindStudentsByAgeBetween() {
-        ResponseEntity<Collection<Student>> response = restTemplate.getForEntity(
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 getRootUrl() + "/filterByAge?min=20&max=30",
-                Collection.class);
+                Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -69,9 +66,9 @@ public class StudentControllerTest {
 
     @Test
     void testFindStudentsByAge() {
-        ResponseEntity<Collection<Student>> response = restTemplate.getForEntity(
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 getRootUrl() + "/filter?age=20",
-                Collection.class);
+                Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotEmpty();
@@ -79,9 +76,9 @@ public class StudentControllerTest {
 
     @Test
     void testFindStudentsByName() {
-        ResponseEntity<Collection> response = restTemplate.getForEntity(
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 getRootUrl() + "/filter?name=harry",
-                Collection.class);
+                Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotEmpty();
@@ -89,9 +86,9 @@ public class StudentControllerTest {
 
     @Test
     void testFindStudentsByPartOfName() {
-        ResponseEntity<Collection> response = restTemplate.getForEntity(
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
                 getRootUrl() + "/filter?part=rry",
-                Collection.class);
+                Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotEmpty();
