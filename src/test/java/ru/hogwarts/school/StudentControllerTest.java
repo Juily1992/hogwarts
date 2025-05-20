@@ -11,14 +11,14 @@ import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Collection;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -52,6 +52,7 @@ public class StudentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).hasSizeGreaterThan(0);
     }
 
     @Test
@@ -81,7 +82,9 @@ public class StudentControllerTest {
                 Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotEmpty();
+        assertThat(response.getBody()).isNotEmpty()
+                .extracting(Student::getName)
+                .containsOnlyOnce("Harry");
     }
 
     @Test
@@ -111,6 +114,8 @@ public class StudentControllerTest {
     @Test
     void testEditStudent() {
         Student existing = restTemplate.getForObject(getRootUrl() + "/1", Student.class);
+        assertThat(existing).isNotNull();
+
         existing.setAge(16);
 
         HttpEntity<Student> request = new HttpEntity<>(existing);
@@ -139,12 +144,14 @@ public class StudentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getName()).isNotNull();
     }
 
     @Test
     void testUploadAvatar() throws Exception {
         File file = File.createTempFile("test", ".jpg");
         Files.write(file.toPath(), "fake-image-content".getBytes());
+
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("avatar", new FileSystemResource(file));
@@ -158,6 +165,7 @@ public class StudentControllerTest {
                 getRootUrl() + "/{id}/avatar", request, String.class, 1L);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        file.deleteOnExit();
     }
 
     @Test
@@ -177,4 +185,5 @@ public class StudentControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotEmpty();
     }
+
 }

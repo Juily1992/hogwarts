@@ -1,10 +1,11 @@
 package ru.hogwarts.school;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,19 +15,22 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.services.FacultyService;
 
 import java.util.Collection;
 import java.util.List;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FacultyControllerTest {
-private FacultyService facultyService;
+    private FacultyService facultyService;
+    @Autowired
+    private FacultyRepository facultyRepository;
+    @Autowired
+    private StudentRepository studentRepository;
     @LocalServerPort
     private int port;
 
@@ -37,6 +41,26 @@ private FacultyService facultyService;
         return "http://localhost:" + port + "/faculty";
     }
 
+    @BeforeEach
+    public void setup() {
+        Faculty faculty = new Faculty();
+        faculty.setColour("Red");
+        faculty.setName("Griff");
+        Student student = new Student();
+        student.setAge(11);
+        student.setName("Harry");
+        student.setSurname("Potter");
+        student.setFaculty(faculty);
+        facultyRepository.save(faculty);
+        studentRepository.save(student);
+    }
+
+    @AfterEach
+    public void clear() {
+        studentRepository.deleteAll();
+        facultyRepository.deleteAll();
+    }
+
     @Test
     void testGetFacultyById_ShouldReturnFaculty_WhenExists() {
         Long id = 1L;
@@ -44,6 +68,14 @@ private FacultyService facultyService;
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getId()).isEqualTo(id);
+    }
+
+    private Faculty createTestFaculty(Long id, String name, String colour) {
+        Faculty faculty = new Faculty();
+        faculty.setId(id);
+        faculty.setName(name);
+        faculty.setColour(colour);
+        return faculty;
     }
 
     @Test
@@ -73,7 +105,8 @@ private FacultyService facultyService;
                 url,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<Faculty>>() {}
+                new ParameterizedTypeReference<List<Faculty>>() {
+                }
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -100,21 +133,11 @@ private FacultyService facultyService;
 
     @Test
     void testFindAllFaculties_WhenNoFilterParams() {
-         Collection<Faculty> allFaculties = List.of(
-                new Faculty(1L, "Gryffindor", "Red"),
-                new Faculty(2L, "Hufflepuff", "Yellow")
-        );
-
-        when(facultyService.getAllFaculty()).thenReturn(allFaculties);
-
-        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(
-                getRootUrl() + "/filter",
-                Faculty[].class
-        );
+        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(getRootUrl() + "/filter", Faculty[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody()).isNotEmpty();
+        assertThat(response.getBody()).hasSizeGreaterThan(0);
     }
 
     @Test

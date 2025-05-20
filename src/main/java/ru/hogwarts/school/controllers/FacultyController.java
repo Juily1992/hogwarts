@@ -61,22 +61,20 @@ public class FacultyController {
 
     @PutMapping
     public ResponseEntity<Faculty> editFaculty(@RequestBody Faculty faculty) {
-        Faculty foundFaculty = facultyService.findFaculty(faculty.getId());
-        if (foundFaculty == null) {
+        Faculty updated = facultyService.editFaculty(faculty);
+        if (updated == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(foundFaculty);
-
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Faculty> deleteFaculty(@PathVariable Long id) {
         Faculty deletedFaculty = facultyService.deleteFaculty(id);
-
         if (deletedFaculty == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(deletedFaculty);
     }
 
     @GetMapping("/{facultyId}/students")

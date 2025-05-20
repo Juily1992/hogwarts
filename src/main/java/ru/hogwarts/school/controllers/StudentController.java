@@ -91,12 +91,11 @@ public class StudentController {
 
     @PutMapping
     public ResponseEntity<Student> editStudent(@RequestBody Student student) {
-        Student foundStudent = studentService.findStudent(student.getId());
-        if (foundStudent == null) {
+        Student updated = studentService.editStudent(student);
+        if (updated == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(foundStudent);
-
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("{id}")
@@ -139,12 +138,14 @@ public class StudentController {
 
         Path path = Path.of(avatar.getFilePath());
 
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(avatar.getMediaType());
+        response.setContentLengthLong(avatar.getFileSize());
+
         try (InputStream is = Files.newInputStream(path);
              OutputStream os = response.getOutputStream()) {
-            response.setStatus(200);
-            response.setContentType(avatar.getMediaType());
-            response.setContentLength((int) avatar.getFileSize());
             is.transferTo(os);
         }
     }
 }
+

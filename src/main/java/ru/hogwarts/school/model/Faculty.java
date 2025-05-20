@@ -1,5 +1,6 @@
 package ru.hogwarts.school.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
@@ -16,6 +17,7 @@ public class Faculty {
     private String colour;
 
     @OneToMany(mappedBy = "faculty")
+    @JsonIgnore
     private Set<Student> student = new HashSet<>();
 
     public Set<Student> getStudent() {

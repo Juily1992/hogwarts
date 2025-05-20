@@ -28,7 +28,11 @@ public class FacultyService {
     }
 
     public Faculty editFaculty(Faculty faculty) {
-        return facultyRepository.save(faculty);
+        Faculty existing = findFaculty(faculty.getId());
+        if (existing == null) {
+            return null;
+        }
+        return facultyRepository.save(faculty); // ← должно быть так
     }
 
     public Collection<Faculty> getAllFaculty() {

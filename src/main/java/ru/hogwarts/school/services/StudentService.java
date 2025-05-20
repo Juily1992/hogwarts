@@ -42,6 +42,9 @@ public class StudentService {
     }
 
     public Student editStudent(Student student) {
+        if (!studentRepository.existsById(student.getId())) {
+            return null;
+        }
         return studentRepository.save(student);
     }
 
