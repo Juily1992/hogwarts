@@ -3,6 +3,10 @@ package ru.hogwarts.school;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +21,7 @@ import ru.hogwarts.school.services.StudentService;
 import java.util.Collection;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -230,56 +235,56 @@ public class StudentControllerTestMVC {
         verify(studentService, times(1)).getStudentById(999L);
     }
 
-//    @Test
-//    void shouldRejectLargeAvatarUpload() throws Exception {
-//        MockMultipartFile file = new MockMultipartFile(
-//                "avatar", "large.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[1024 * 1024 + 1]
-//        );
-//
-//        mockMvc.perform(multipart("/student/1/avatar").file(file))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().string("The size of avatar is too large"));
-//
-//        verify(studentService, never()).uploadAvatar(eq(1L), any(MultipartFile.class));
-//    }
+    @Test
+    void shouldRejectLargeAvatarUpload() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "avatar", "large.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[1024 * 1024 + 1]
+        );
 
-//    @Test
-//    void shouldDownloadAvatarPreview() throws Exception {
-//        Avatar avatar = new Avatar();
-//        avatar.setMediaType("image/jpeg");
-//        avatar.setPreview("fake-image-data".getBytes());
-//
-//        when(studentService.findStudentAvatar(1L)).thenReturn(avatar);
-//
-//        mockMvc.perform(get("/student/1/avatar/preview"))
-//                .andExpect(status().isOk())
-//                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "image/jpeg"))
-//                .andExpect(content().bytes("fake-image-data".getBytes()));
-//    }
-//
-//    @Test
-//    void shouldReturnNotFoundWhenAvatarDoesNotExist() throws Exception {
-//        when(studentService.findStudentAvatar(999L)).thenReturn(null);
-//
-//        mockMvc.perform(get("/student/999/avatar/preview"))
-//                .andExpect(status().isNotFound());
-//    }
+        mockMvc.perform(multipart("/student/1/avatar").file(file))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("The size of avatar is too large"));
 
-//    @Test
-//    void shouldStreamAvatarSuccessfully() throws Exception {
-//        Avatar avatar = new Avatar();
-//        avatar.setFilePath("src/test/resources/test.jpg");
-//        avatar.setFileSize(1024L);
-//        avatar.setMediaType("image/jpeg");
-//
-//        when(studentService.findStudentAvatar(1L)).thenReturn(avatar);
-//
-//        mockMvc.perform(get("/student/1/avatar"))
-//                .andExpect(status().isOk())
-//                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "image/jpeg"));
-//
-//        verify(studentService, times(1)).findStudentAvatar(1L);
-//    }
+        verify(studentService, never()).uploadAvatar(eq(1L), any(MultipartFile.class));
+    }
+
+    @Test
+    void shouldDownloadAvatarPreview() throws Exception {
+        Avatar avatar = new Avatar();
+        avatar.setMediaType("image/jpeg");
+        avatar.setPreview("fake-image-data".getBytes());
+
+        when(studentService.findStudentAvatar(1L)).thenReturn(avatar);
+
+        mockMvc.perform(get("/student/1/avatar/preview"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "image/jpeg"))
+                .andExpect(content().bytes("fake-image-data".getBytes()));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAvatarDoesNotExist() throws Exception {
+        when(studentService.findStudentAvatar(999L)).thenReturn(null);
+
+        mockMvc.perform(get("/student/999/avatar/preview"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldStreamAvatarSuccessfully() throws Exception {
+        Avatar avatar = new Avatar();
+        avatar.setFilePath("src/test/resources/test.jpg");
+        avatar.setFileSize(1024L);
+        avatar.setMediaType("image/jpeg");
+
+        when(studentService.findStudentAvatar(1L)).thenReturn(avatar);
+
+        mockMvc.perform(get("/student/1/avatar"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "image/jpeg"));
+
+        verify(studentService, times(1)).findStudentAvatar(1L);
+    }
 
     @Test
     void shouldReturnNotFoundWhenStreamingAvatarOfUnknownStudent() throws Exception {
@@ -301,5 +306,63 @@ public class StudentControllerTestMVC {
                 .andExpect(status().isOk());
 
         verify(studentService, times(1)).uploadAvatar(eq(1L), any(MultipartFile.class));
+    }
+
+    @Test
+    void shouldReturnTotalStudentCount() throws Exception {
+        when(studentService.getTotalStudents()).thenReturn(100L);
+
+        mockMvc.perform(get("/student/total"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("100"));
+    }
+
+    @Test
+    void shouldReturnStudentCountForFaculty() throws Exception {
+        when(studentService.getStudentCountByFaculty(1L)).thenReturn(25L);
+
+        mockMvc.perform(get("/student/total/by-faculty/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("25"));
+    }
+
+    @Test
+    void shouldReturnAverageStudentAge() throws Exception {
+        when(studentService.getAverageStudentAge()).thenReturn(21.5);
+
+        mockMvc.perform(get("/student/average-age"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("21.5"));
+    }
+
+    @Test
+    void shouldReturnLatestFiveStudents() throws Exception {
+        List<Student> students = List.of(
+                createTestStudent(10L, "Harry", 15),
+                createTestStudent(9L, "Ron", 16),
+                createTestStudent(8L, "Hermione", 17),
+                createTestStudent(7L, "Draco", 16),
+                createTestStudent(6L, "Neville", 15)
+        );
+
+        when(studentService.getLatestFiveStudents()).thenReturn(students);
+
+        mockMvc.perform(get("/student/latest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(5))
+                .andExpect(jsonPath("$[0].name").value("Harry"));
+    }
+
+    @Test
+    void testGetAvatarsByStudentId_withPagination_returnsPage() throws Exception {
+        Page<Avatar> page = new PageImpl<>(List.of(new Avatar(), new Avatar()), PageRequest.of(0, 2), 20);
+
+        when(studentService.getAvatarsByStudentId(1L, 0, 2)).thenReturn(page);
+
+        mockMvc.perform(get("/student/1/avatars").queryParam("page", "0").queryParam("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.totalElements").value(20))
+                .andExpect(jsonPath("$.totalPages").value(10));
     }
 }
