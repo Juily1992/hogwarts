@@ -1,6 +1,7 @@
 package ru.hogwarts.school.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/student")
@@ -146,6 +148,50 @@ public class StudentController {
              OutputStream os = response.getOutputStream()) {
             is.transferTo(os);
         }
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<Long> getTotalStudents() {
+        return ResponseEntity.ok(studentService.getTotalStudents());
+    }
+
+    @GetMapping("/total/by-faculty/{facultyId}")
+    public ResponseEntity<Long> getStudentCountByFaculty(@PathVariable Long facultyId) {
+        Long count = studentService.getStudentCountByFaculty(facultyId);
+        if (count == null || count == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/average-age")
+    public ResponseEntity<Double> getAverageStudentAge() {
+        Double averageAge = studentService.getAverageStudentAge();
+        if (averageAge == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(averageAge);
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<List<Student>> getLatestStudents() {
+        List<Student> latestStudents = studentService.getLatestFiveStudents();
+        return ResponseEntity.ok(latestStudents);
+    }
+
+    @GetMapping("/{studentId}/avatars")
+    public ResponseEntity<Page<Avatar>> getAvatarsByStudentId(
+            @PathVariable Long studentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Page<Avatar> avatars = studentService.getAvatarsByStudentId(studentId, page, size);
+
+        if (avatars.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(avatars);
     }
 }
 

@@ -4,6 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.model.Avatar;
@@ -15,6 +18,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -110,4 +114,24 @@ public class StudentService {
         return filename.substring(filename.lastIndexOf(".") + 1);
     }
 
+    public long getTotalStudents() {
+        return studentRepository.countAllStudents();
+    }
+
+    public long getStudentCountByFaculty(Long facultyId) {
+        return studentRepository.countStudentsByFaculty(facultyId);
+    }
+
+    public Double getAverageStudentAge() {
+        return studentRepository.findAverageAge();
+    }
+
+    public List<Student> getLatestFiveStudents() {
+        return studentRepository.findTop5ByOrderByIdDescNative();
+    }
+
+    public Page<Avatar> getAvatarsByStudentId(Long studentId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return avatarRepository.findByStudentId(studentId, pageable);
+    }
 }
