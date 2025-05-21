@@ -36,6 +36,9 @@ public class Student {
     public void setName(String name) {
         this.name = name;
     }
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
+    }
 
     public String getSurname() {
         return surname;
