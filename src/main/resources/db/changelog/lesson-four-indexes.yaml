@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_idx_student_name
+      author: hogwarts_team
+      changes:
+          - createIndex:
+              indexName: idx_student_name
+              tableName: student
+              unique: false
+              columns:
+                - column:
+                    name: name
+                    type: VARCHAR(255)
+          - changeSet:
+              id: create_idx_faculty_name_colour
+              author: hogwarts_team
+              changes:
+                - createIndex:
+                    indexName: idx_faculty_name_colour
+                    tableName: faculty
+                    unique: true
+                    columns:
+                      - column:
+                          name: name
+                          type: TEXT
+                      - column:
+                          name: colour
+                          type: TEXT

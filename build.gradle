@@ -27,6 +27,8 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
 
 	testImplementation 'org.mockito:mockito-core'
+
+	runtimeOnly 'org.liquibase:liquibase-core'
 }
 
 tasks.named('test') {
