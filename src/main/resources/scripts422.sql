@@ -1,4 +1,4 @@
-
+-- Таблица person
 CREATE TABLE person (
                         id BIGSERIAL PRIMARY KEY,
                         name VARCHAR(255) NOT NULL,
@@ -6,6 +6,7 @@ CREATE TABLE person (
                         has_license BOOLEAN NOT NULL DEFAULT false
 );
 
+-- Таблица car
 CREATE TABLE car (
                      id BIGSERIAL PRIMARY KEY,
                      make TEXT NOT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE car (
                      price NUMERIC(19, 2) NOT NULL CHECK (price >= 0)
 );
 
+-- Связь many-to-many: один человек может использовать несколько машин и наоборот
 CREATE TABLE person_car (
                             person_id BIGINT REFERENCES person(id),
                             car_id BIGINT REFERENCES car(id),

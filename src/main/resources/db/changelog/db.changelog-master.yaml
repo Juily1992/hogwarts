@@ -1,3 +1,0 @@
-databaseChangeLog:
-  - include:
-      file: classpath:db/changelog/lesson-four-indexes.yml
