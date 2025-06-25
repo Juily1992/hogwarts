@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.exceptions.StudentNotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
@@ -19,6 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -28,6 +32,7 @@ public class StudentService {
     private final AvatarRepository avatarRepository;
     @Value("${avatars.dir.path}")
     private String avatarsDir;
+    private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
 
     public StudentService(StudentRepository studentRepository, AvatarRepository avatarRepository) {
@@ -36,6 +41,7 @@ public class StudentService {
     }
 
     public Student createStudent(Student student) {
+        logger.info("Was invoked method for create student");
         student.setId(null);
         return studentRepository.save(student);
     }
@@ -46,18 +52,27 @@ public class StudentService {
     }
 
     public Student editStudent(Student student) {
+        logger.debug("Editing student with ID {}", student.getId());
         if (!studentRepository.existsById(student.getId())) {
-            return null;
+            logger.error("Cannot edit student - no student with ID {}", student.getId());
+            throw new StudentNotFoundException("Student not found");
         }
+        logger.info("Was invoked method to update student");
         return studentRepository.save(student);
     }
 
     public Collection<Student> getAllStudents() {
+        logger.warn("Someone is getting all students");
         return studentRepository.findAll();
     }
 
 
     public void deleteStudent(long id) {
+        logger.info("Was invoked method to delete student with ID {}", id);
+        if (!studentRepository.existsById(id)) {
+            logger.error("Cannot delete student - no student with ID {}", id);
+            throw new StudentNotFoundException("Student not found");
+        }
         studentRepository.deleteById(id);
     }
 
@@ -66,6 +81,7 @@ public class StudentService {
     }
 
     public Collection<Student> findStudentByAge(int age) {
+        logger.info("Was invoked method to filter students by age {}", age);
         return studentRepository.findStudentByAge(age);
     }
 
@@ -78,7 +94,14 @@ public class StudentService {
     }
 
     public Student getStudentById(Long id) {
-        return studentRepository.findById(id).orElse(null);
+        logger.debug("Looking for student with id {}", id);
+        Student student = studentRepository.findById(id).orElse(null);
+        if (student == null) {
+            logger.error("There is no student with id = {}", id);
+            throw new StudentNotFoundException("Student not found");
+        }
+        logger.info("Was invoked method to get student by id {}", id);
+       return studentRepository.findById(id).orElse(null);
     }
 
     public void uploadAvatar(Long studentId, MultipartFile file) throws IOException {
