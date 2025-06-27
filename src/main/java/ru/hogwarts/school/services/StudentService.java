@@ -181,4 +181,36 @@ public class StudentService {
                 .parallel()
                 .sum();
     }
+
+    public List<String> getAllStudentNames() {
+        return studentRepository.findAll().stream()
+                .map(Student::getName)
+                .toList();
+    }
+
+    public void processNamesWithThreads(List<String> names) {
+        Thread t1 = new Thread(() -> {
+            printNameSynchronized(names.get(2));
+            printNameSynchronized(names.get(3));
+        }, "Thread-1");
+
+        Thread t2 = new Thread(() -> {
+            printNameSynchronized(names.get(4));
+            printNameSynchronized(names.get(5));
+        }, "Thread-2");
+
+        t1.start();
+        t2.start();
+
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public synchronized void printNameSynchronized(String name) {
+        System.out.println("Thread: " + Thread.currentThread().getName() + ", Name: " + name);
+    }
 }
