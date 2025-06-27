@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -101,7 +103,7 @@ public class StudentService {
             throw new StudentNotFoundException("Student not found");
         }
         logger.info("Was invoked method to get student by id {}", id);
-       return studentRepository.findById(id).orElse(null);
+        return studentRepository.findById(id).orElse(null);
     }
 
     public void uploadAvatar(Long studentId, MultipartFile file) throws IOException {
@@ -156,5 +158,27 @@ public class StudentService {
     public Page<Avatar> getAvatarsByStudentId(Long studentId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return avatarRepository.findByStudentId(studentId, pageable);
+    }
+
+    public List<String> getNamesStartingWithA() {
+        return studentRepository.findAll().stream()
+                .map(student -> student.getName())
+                .filter(name -> name != null && !name.isEmpty() && (name.charAt(0) == 'A' || name.charAt(0) == 'a'))
+                .map(String::toUpperCase)
+                .sorted()
+                .toList();
+    }
+
+    public double getAverageAgeOfStudents() {
+        return studentRepository.findAll().stream()
+                .mapToInt(Student::getAge)
+                .average()
+                .orElse(0);
+    }
+
+    public int calculateSumUsingParallelStream() {
+        return IntStream.rangeClosed(1, 1_000_000)
+                .parallel()
+                .sum();
     }
 }
