@@ -193,5 +193,30 @@ public class StudentController {
 
         return ResponseEntity.ok(avatars);
     }
+
+    @GetMapping("/names-start-with-a")
+    public List<String> getNamesStartingWithA() {
+        return studentService.getNamesStartingWithA();
+    }
+
+    @GetMapping("/average-age")
+    public double getAverageAgeOfStudents() {
+        return studentService.getAverageAgeOfStudents();
+    }
+
+    @GetMapping("/sum")
+    public int calculateSum() {
+        return studentService.calculateSumUsingParallelStream();
+    }
+
+    @GetMapping("/students/print-parallel")
+    public ResponseEntity<String> printParallel() {
+        return studentService.processStudentsParallel();
+    }
+
+    @GetMapping("/students/print-synchronized")
+    public ResponseEntity<String> printSynchronized() throws InterruptedException {
+       return studentService.processPrintSynchronized();
+    }
 }
 
