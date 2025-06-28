@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.exceptions.StudentNotFoundException;
@@ -186,6 +187,39 @@ public class StudentService {
         return studentRepository.findAll().stream()
                 .map(Student::getName)
                 .toList();
+    }
+
+    public ResponseEntity<String> processStudentsParallel() {
+        List<String> names = getAllStudentNames();
+
+        System.out.println("Main thread - " + names.get(0));
+        System.out.println("Main thread - " + names.get(1));
+        if (names.size() < 6) {
+            throw new RuntimeException("Not enough students in database to perform this action");
+        }
+
+        new Thread(() -> {
+            System.out.println("Thread 1 - " + names.get(2));
+            System.out.println("Thread 1 - " + names.get(3));
+        }, "Thread-1").start();
+
+        new Thread(() -> {
+            System.out.println("Thread 2 - " + names.get(4));
+            System.out.println("Thread 2 - " + names.get(5));
+        }, "Thread-2").start();
+
+        return ResponseEntity.ok("Names printed in parallel");
+    }
+
+    public ResponseEntity<String> processPrintSynchronized() throws InterruptedException {
+        List<String> names = getAllStudentNames();
+
+        printNameSynchronized(names.get(0));
+        printNameSynchronized(names.get(1));
+
+        processNamesWithThreads(names);
+
+        return ResponseEntity.ok("Names printed synchronously");
     }
 
     public void processNamesWithThreads(List<String> names) {

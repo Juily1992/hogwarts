@@ -211,37 +211,12 @@ public class StudentController {
 
     @GetMapping("/students/print-parallel")
     public ResponseEntity<String> printParallel() {
-        List<String> names = studentService.getAllStudentNames();
-
-        System.out.println("Main thread - " + names.get(0));
-        System.out.println("Main thread - " + names.get(1));
-        if (names.size() < 6) {
-            throw new RuntimeException("Not enough students in database to perform this action");
-        }
-
-        new Thread(() -> {
-            System.out.println("Thread 1 - " + names.get(2));
-            System.out.println("Thread 1 - " + names.get(3));
-        }, "Thread-1").start();
-
-        new Thread(() -> {
-            System.out.println("Thread 2 - " + names.get(4));
-            System.out.println("Thread 2 - " + names.get(5));
-        }, "Thread-2").start();
-
-        return ResponseEntity.ok("Names printed in parallel");
+        return studentService.processStudentsParallel();
     }
 
     @GetMapping("/students/print-synchronized")
     public ResponseEntity<String> printSynchronized() throws InterruptedException {
-        List<String> names = studentService.getAllStudentNames();
-
-        studentService.printNameSynchronized(names.get(0));
-        studentService.printNameSynchronized(names.get(1));
-
-        studentService.processNamesWithThreads(names);
-
-        return ResponseEntity.ok("Names printed synchronously");
+       return studentService.processPrintSynchronized();
     }
 }
 
